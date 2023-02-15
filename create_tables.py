@@ -22,14 +22,14 @@ sql_create_simulations_table = """CREATE TABLE IF NOT EXISTS simulations (
 sql_drop_table_simulations = """DROP TABLE IF EXISTS simulations;"""
 sql_drop_table_blocks = """DROP TABLE IF EXISTS blocks;"""
 
-def create_connection(db_file,timeout=5.0,isolation_level=None):
+def create_connection(dbf=db_file,timeout=5.0,isolation_level=None):
     """ create a database connection to a SQLite database """
     conn = None
     try:
         if isolation_level is not None:
-            conn = sqlite3.connect(db_file,timeout, isolation_level)
+            conn = sqlite3.connect(dbf,timeout, isolation_level)
         else:
-            conn = sqlite3.connect(db_file,timeout)
+            conn = sqlite3.connect(dbf,timeout)
     except Exception as e:
         print(e)
     return conn
@@ -78,6 +78,7 @@ def insert_into_simulations(conn, records):
         print("No valid connection")
 
     cur = conn.cursor()
+    #TODO: This is wrong should use executemany.
     for r in records:
         #print(r)
         cur.execute("insert into simulations(id, directory,distance) values(?,?,?);", r)

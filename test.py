@@ -4,22 +4,30 @@ import create_tables
 from set_simulation_times import set_simulation_end_time, set_simulation_start_time
 from os import system
 import threading
+from random import uniform
+import traceback
+
 
 def run_each_simulation(simulation_tuple):
-    print(r"Here is the {simulation_tuple}")
-    simulation_id = simulation_tuple[0]
-    simulation_dir = simulation_tuple[1]
-                 
-    conn = create_tables.create_connection(create_tables.db_file)
-    thread_name = threading.get_native_id()
-    print(f'The thread is: {thread_name}')
-    set_simulation_start_time(conn,simulation_id)
-    execute_string = f'echo "{simulation_dir}" >> help'
-    print(f'String to be executed is: {execute_string}')
-    test = system(execute_string)
-    print(f'Test return value is {test}')
-    set_simulation_end_time(conn, simulation_id, test)
-    return test
+    try:
+        print(r"Here is the {simulation_tuple}")
+        simulation_id = simulation_tuple[0]
+        simulation_dir = simulation_tuple[1]
+
+        conn = create_tables.create_connection(create_tables.db_file)
+        thread_name = threading.get_native_id()
+        print(f'The thread is: {thread_name}')
+        set_simulation_start_time(simulation_id)
+        delay = uniform(0.5,5)
+        execute_string = f'sleep {delay} && echo "{simulation_dir}" >> help'
+        print(f'String to be executed is: {execute_string}')
+        test = system(execute_string)
+        print(f'Test return value is {test}')
+        set_simulation_end_time(simulation_id, test)
+        return test
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
 
 def run_each_block():
     try:

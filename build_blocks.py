@@ -16,6 +16,8 @@ update_simulations_fk_block_id_sql = """update simulations set fk_blocks_id=? wh
 
 create_new_block_sql = """INSERT into blocks (id,name) Values (?,?);"""
 
+drop_index_sql ="""DROP INDEX IF EXISTS idx_simulations_fk_blocks_id ;"""
+
 def find_highest_id(conn):
     cur = conn.cursor()
     cur.execute(find_max_simulation_id_sql)
@@ -23,6 +25,11 @@ def find_highest_id(conn):
     row =  rows[0][0]
     return row
 
+def drop_index(conn):
+    cur = conn.cursor()
+    cur.execute(drop_index_sql)
+    conn.commit()
+    
 def update_simulation_rows(conn,data):
     """
     Query tasks by priority
@@ -48,8 +55,11 @@ def create_index_on_fk_blocks_id(conn):
 if __name__=="__main__":
     conn = create_tables.create_connection(create_tables.db_file)
     number_of_rows = find_highest_id(conn)
-    #block_size=3
+    block_size=10
 
+    #Delete index on start
+    drop_index(conn)
+    
     mapping_between_block_and_simulation = []
     block_max= int(math.ceil(number_of_rows/block_size))
     current_simulation=0
