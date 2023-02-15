@@ -11,7 +11,7 @@ def set_simulation_start_time(conn,id):
     data = (datetime.now(), id)
     __set_time(conn,update_simulations_start_time_sql,data)
 
-def set_simulation_end_time(conn,id):
+def set_simulation_end_time(conn,id, status):
     data = (str(datetime.now()), status, id)
     __set_time(conn,update_simulations_end_time_sql,data)
 

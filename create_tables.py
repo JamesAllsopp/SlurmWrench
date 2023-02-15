@@ -1,4 +1,5 @@
 import sqlite3
+import traceback
 db_file ='sqlite_test.db'
 sql_create_blocks_table = """ CREATE TABLE IF NOT EXISTS blocks (
                                     id integer PRIMARY KEY,
@@ -21,12 +22,14 @@ sql_create_simulations_table = """CREATE TABLE IF NOT EXISTS simulations (
 sql_drop_table_simulations = """DROP TABLE IF EXISTS simulations;"""
 sql_drop_table_blocks = """DROP TABLE IF EXISTS blocks;"""
 
-def create_connection(db_file):
+def create_connection(db_file,timeout=5.0,isolation_level=None):
     """ create a database connection to a SQLite database """
     conn = None
     try:
-        conn = sqlite3.connect(db_file)
-        print(sqlite3.version)
+        if isolation_level is not None:
+            conn = sqlite3.connect(db_file,timeout, isolation_level)
+        else:
+            conn = sqlite3.connect(db_file,timeout)
     except Exception as e:
         print(e)
     return conn
@@ -47,8 +50,8 @@ def drop_table(conn, drop_table):
 
     try:
         c = conn.cursor()
-        c.execute(drop_table_sql)
-    except Error as e:
+        c.execute(drop_table)
+    except Exception as e:
         print(e)
         
 def DoesTableExist(conn, table_name):
@@ -76,7 +79,7 @@ def insert_into_simulations(conn, records):
 
     cur = conn.cursor()
     for r in records:
-        print(r)
+        #print(r)
         cur.execute("insert into simulations(id, directory,distance) values(?,?,?);", r)
     conn.commit()
 
@@ -106,6 +109,7 @@ if __name__ == '__main__':
         insert_into_simulations(conn, records)
     except Exception as e:
         print(f"Unknown failure {e}")
+        traceback.print_exc()
     finally:
         conn.close()
         

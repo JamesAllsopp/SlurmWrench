@@ -48,11 +48,11 @@ def create_index_on_fk_blocks_id(conn):
 if __name__=="__main__":
     conn = create_tables.create_connection(create_tables.db_file)
     number_of_rows = find_highest_id(conn)
-    block_size=3
+    #block_size=3
 
     mapping_between_block_and_simulation = []
     block_max= int(math.ceil(number_of_rows/block_size))
-    current_simulation=1
+    current_simulation=0
     for block_id in range(1,block_max+1):
         end_simulation=current_simulation+block_size
         mapping_between_block_and_simulation.append((block_id,current_simulation,end_simulation))

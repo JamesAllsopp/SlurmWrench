@@ -23,8 +23,8 @@ def delete_all_from_simulations(conn)->bool:
     return True
     
 if __name__=="__main__":
-    lines = read_file('test_data.tsv')
-    print(lines)
+    lines = read_file('slurmjoborder.config')
+    #print(lines)
     conn = create_tables.create_connection('sqlite_test.db')
     delete_all_from_simulations(conn)
     create_tables.insert_into_simulations(conn,lines)

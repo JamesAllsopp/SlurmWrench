@@ -4,6 +4,7 @@ from pathlib import Path
 
 from datetime import datetime
 from time import sleep
+from random import uniform
 
 get_simulations_for_a_block_sql = """select * from simulations where fk_blocks_id=?;"""
 
@@ -19,50 +20,58 @@ def get_simulations_for_a_block(conn,data):
     rows = cur.fetchall()
     
     return rows
+
 def update_end_date_for_a_block(conn, id):
     cur = conn.cursor()
-    cur.execute(update_end_date_sql,(id,))
-    cur.commit()
+    current_date = datetime.now()
+    print(f'Update end_date_for_a_block;Current date is: {current_date}') 
+    cur.execute(update_end_date_sql,(current_date,id))
+    conn.commit()
 
 def get_next_block(conn)->bool:
     if conn is None:
         return None
-    conn.isolation_level = None
-    with conn:
-        c=conn.cursor()
-        
-        c.execute("begin")
-        c.execute(get_next_block_to_work_on)
-        #first_row =c.fetchone()
-        first_row = next(c, [None])[0] # https://stackoverflow.com/questions/7011291/how-to-get-a-single-result-from-a-sql-query-in-python
-        #if first_row is None:
-        #    c.execute(get_next_block_to_work_on_first_sql)
-        #    #c.fetchone()
-        #    first_row = next(c, [None])[0]
-        print(first_row)
-        if first_row ==None:
-            return False;
-
-        c.execute(update_begin_date_sql,(datetime.now(),first_row))
-        c.execute("commit")
-        return first_row
-        #except Exception as e:
-        #    print(e)
-        #    c.execute("rollback")
-    return False
+    first_row = None
+    c=conn.cursor()
+    retries=0
+    while retries<5:
+        try:
+            with conn:
+                c.execute("begin")
+                c.execute(get_next_block_to_work_on)
+ 
+                first_row = next(c, [None])[0] # https://stackoverflow.com/questions/7011291/how-to-get-a-single-result-from-a-sql-query-in-python
+                print(f'first_row before update {first_row}')
+                print(type(first_row))
+                if first_row is None:
+                    print(f'first_row is {first_row}')
+                    return False;
+                current_time = datetime.now()
+                print(f'Current time is : {current_time}')
+                c.execute(update_begin_date_sql,(current_time,first_row))
+                print(f'first_row after update {first_row}')
+                return first_row
+        except Exception as e :
+            print(e)
+            sleep_time = uniform(0.1,4)
+            print(f"Sleeping for {sleep_time}")
+            sleep(sleep_time)
+            retries+=1
+            
+    return first_row
 
 def get_simulations():
     
     retries=100
     next_block=[]
-    for i in range(1,retries):
-        try:
-            conn = create_tables.create_connection(create_tables.db_file)
-            next_block=get_next_block(conn)
-            break
-        except Exception as e:
-            print(e)
-            sleep(1)
+    #for i in range(1,retries):
+    #    try:
+    conn = create_tables.create_connection(create_tables.db_file,timeout=30, isolation_level=None)
+    next_block=get_next_block(conn)
+    #        break
+    #    except Exception as e:
+    #        print(e)
+    #        sleep(1)
             
     if next_block is False:
         return False
