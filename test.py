@@ -9,6 +9,7 @@ import traceback
 
 
 def run_each_simulation(simulation_tuple):
+    test=None
     try:
         print(r"Here is the {simulation_tuple}")
         simulation_id = simulation_tuple[0]
@@ -24,10 +25,10 @@ def run_each_simulation(simulation_tuple):
         test = system(execute_string)
         print(f'Test return value is {test}')
         set_simulation_end_time(simulation_id, test)
-        return test
     except Exception as e:
         print(e)
         traceback.print_exc()
+    return test
 
 def run_each_block():
     try:
@@ -53,7 +54,7 @@ def run_each_block():
             #async_result = p.map_async(run_each_simulation, rows)
             #p.close()
             #p.join()
-            update_end_date_for_a_block(new_conn, next_block)
+            update_end_date_for_a_block(next_block)
     except Exception as e :
         print(e)
         return False 

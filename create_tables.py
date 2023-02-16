@@ -78,10 +78,7 @@ def insert_into_simulations(conn, records):
         print("No valid connection")
 
     cur = conn.cursor()
-    #TODO: This is wrong should use executemany.
-    for r in records:
-        #print(r)
-        cur.execute("insert into simulations(id, directory,distance) values(?,?,?);", r)
+    cur.executemany("insert into simulations(id, directory,distance) values(?,?,?);", records)
     conn.commit()
 
 

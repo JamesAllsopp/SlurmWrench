@@ -21,12 +21,32 @@ def get_simulations_for_a_block(conn,data):
     
     return rows
 
-def update_end_date_for_a_block(conn, id):
-    cur = conn.cursor()
-    current_date = datetime.now()
-    print(f'Update end_date_for_a_block;Current date is: {current_date}') 
-    cur.execute(update_end_date_sql,(current_date,id))
-    conn.commit()
+def update_end_date_for_a_block(id):
+    retries=0
+    while retries<5:
+        create_tables.create_connection()
+        if conn is None:
+            retries+=1
+            sleep_time = uniform(0.1,4)
+            print(f"Sleeping for {sleep_time}")
+            sleep(sleep_time)
+            continue
+        try:
+            with conn:
+                cur = conn.cursor()
+                current_date = datetime.now()
+                print(f'Update end_date_for_a_block;Current date is: {current_date}') 
+                cur.execute(update_end_date_sql,(current_date,id))
+                return True
+        except Exception as e :
+            print(e)
+            sleep_time = uniform(0.1,4)
+            print(f"Sleeping for {sleep_time}")
+            sleep(sleep_time)
+            retries+=1
+            
+    raise Exception("update_end_date_for_a_block threw an exception after {retries}")
+
 
 def get_next_block(conn)->bool:
     if conn is None:
@@ -42,7 +62,6 @@ def get_next_block(conn)->bool:
  
                 first_row = next(c, [None])[0] # https://stackoverflow.com/questions/7011291/how-to-get-a-single-result-from-a-sql-query-in-python
                 print(f'first_row before update {first_row}')
-                print(type(first_row))
                 if first_row is None:
                     print(f'first_row is {first_row}')
                     return False;
