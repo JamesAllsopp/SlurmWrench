@@ -24,15 +24,8 @@ def get_simulations_for_a_block(conn,data):
 def update_end_date_for_a_block(id):
     retries=0
     while retries<5:
-        create_tables.create_connection()
-        if conn is None:
-            retries+=1
-            sleep_time = uniform(0.1,4)
-            print(f"Sleeping for {sleep_time}")
-            sleep(sleep_time)
-            continue
         try:
-            with conn:
+            with create_tables.create_connection() as conn:
                 cur = conn.cursor()
                 current_date = datetime.now()
                 print(f'Update end_date_for_a_block;Current date is: {current_date}') 

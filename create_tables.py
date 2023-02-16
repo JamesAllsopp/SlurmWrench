@@ -43,7 +43,7 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
-    except Error as e:
+    except Exception as e:
         print(e)
         
 def drop_table(conn, drop_table):
@@ -91,6 +91,7 @@ if __name__ == '__main__':
             drop_table(conn,sql_drop_table_blocks)
             for table in tables_to_create:
                 try:
+                    print(f'Creating table: {table}')
                     create_table(conn, table[1])
                 except Exception as e:
                     print(f"Unable to create exception due to {e}")

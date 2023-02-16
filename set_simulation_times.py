@@ -20,13 +20,13 @@ def __set_time(sql_command, data):
     retries=0
     while retries<5:
         try:
-            with create_tables.create_connection(timeout=30, isolation_level=None) as conn:
+            with create_tables.create_connection() as conn:
                 cur = conn.cursor()
                 cur.execute("begin")
                 cur.execute(sql_command, data)
                 return
         except Exception as e:
-            print("__set_time has failed with {sql_command}")
+            print(f"__set_time has failed with {sql_command}")
             print(e)
             sleep_time = uniform(0.1,4)
             print(f"Sleeping for {sleep_time}")

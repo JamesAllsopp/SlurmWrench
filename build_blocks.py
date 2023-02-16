@@ -55,7 +55,7 @@ def create_index_on_fk_blocks_id(conn):
 if __name__=="__main__":
     conn = create_tables.create_connection(create_tables.db_file)
     number_of_rows = find_highest_id(conn)
-    block_size=10
+    #block_size=10
 
     #Delete index on start
     drop_index(conn)
