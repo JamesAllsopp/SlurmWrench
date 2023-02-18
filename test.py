@@ -11,7 +11,7 @@ import traceback
 def run_each_simulation(simulation_tuple):
     test=None
     try:
-        print(r"Here is the {simulation_tuple}")
+        print(f"Here is the {simulation_tuple}")
         simulation_id = simulation_tuple[0]
         simulation_dir = simulation_tuple[1]
 

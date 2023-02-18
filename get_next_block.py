@@ -1,4 +1,5 @@
 import create_tables
+from simulations import Simulation
 import sqlite3                                                                                                      
 from pathlib import Path
 
@@ -18,8 +19,8 @@ def get_simulations_for_a_block(conn,data):
     cur = conn.cursor()
     cur.execute(get_simulations_for_a_block_sql, data)
     rows = cur.fetchall()
-    
-    return rows
+    simulations = [ Simulation(*r) for r in rows] 
+    return simulations
 
 def update_end_date_for_a_block(id):
     retries=0

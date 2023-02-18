@@ -2,34 +2,34 @@ from multiprocessing import Pool
 from get_next_block import get_simulations,get_simulations_for_a_block,get_next_block,update_end_date_for_a_block
 import create_tables
 from set_simulation_times import set_simulation_end_time, set_simulation_start_time
+from simulations import Simulation
 from os import system
+from datetime import datetime
 import threading
 from random import uniform
 import traceback
 
 
 
-def run_each_simulation(simulation_tuple):
+def run_each_simulation(sim):
     test=None
     try:
-        print(f"Here is the {simulation_tuple}")
-        simulation_id = simulation_tuple[0]
-        simulation_dir = simulation_tuple[1]
-
-        conn = create_tables.create_connection(create_tables.db_file)
+        print(f"Here is the {sim}")
+        
         thread_name = threading.get_native_id()
         print(f'The thread is: {thread_name}')
-        set_simulation_start_time(simulation_id)
+        sim.start_time = datetime.now()
         delay = uniform(0.5,5)
-        execute_string = f'sleep {delay} && echo "{simulation_dir}" >> help'
+        execute_string = f'sleep {delay} && echo "{sim.directory}" >> help'
         print(f'String to be executed is: {execute_string}')
-        test = system(execute_string)
-        print(f'Test return value is {test}')
-        set_simulation_end_time(simulation_id, test)
+        sim.completion_status = system(execute_string)
+        print(f'Test return value is {sim.completion_status}')
+        sim.end_time = datetime.now()
     except Exception as e:
         print(e)
         traceback.print_exc()
-    return test
+        sim.completion_status = 999
+    return sim
 
 def run_each_block():
     try:
@@ -42,16 +42,18 @@ def run_each_block():
                 return False
 
         with create_tables.create_connection() as sim_conn:
-            rows= get_simulations_for_a_block(sim_conn,(next_block,))    
+            sim= get_simulations_for_a_block(sim_conn,(next_block,))    
 
-            print(rows)
-            if rows:
-                print(f'Block Id is {next_block}, number of rows is {len(rows)}')
-                p =  Pool(processes = len(rows))
-                async_result = p.map_async(run_each_simulation, rows)
+            print(sim)
+            if sim:
+                print(f'Block Id is {next_block}, number of sim is {len(sim)}')
+                p =  Pool(processes = len(sim))
+                async_result = p.map_async(run_each_simulation, sim)
                 p.close()
                 p.join()
+                #updates all the values of the simulation in the database, but as part of a single thread.
                 print(async_result)
+                return_value =  [r.update() for r in async_result._value]
             else:
                 return False
        
